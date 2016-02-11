@@ -38,8 +38,8 @@ def main():
     print(df.describe())
     plot(df)                # max
     plot(df['2015'])        # last year
-    plot(df['2016'])        # this year
     plot(df['2016-01'])     # last month
+    plot(df['2016'])        # this year
     plot(df['2016-02'])     # this month
 
 if __name__ == '__main__':
