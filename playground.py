@@ -16,15 +16,30 @@ AVGWEIGHT = 'Avg. Weight'
 DELTA = 'Delta'
 
 
+def read():
+    df = pd.read_csv(DATAFILE, index_col=0, parse_dates=True)
+    df.sort_index(inplace=True)
+    df = df.asfreq('D')             # fill missing values
+    df.interpolate(inplace=True)    # linear interpolation
+
+    # Exponentially weighted moving average (ewma)
+    df[AVGWEIGHT] = pd.ewma(df[WEIGHT], span=20)
+
+    return df
+
+
 def compute_stats(df):
     print(df.tail())
     print(df.describe())
 
-    # Exponentially weighted moving average (ewma)
-    df[AVGWEIGHT] = pd.ewma(df[WEIGHT], span=20)
     df[DELTA] = df[WEIGHT] - df[AVGWEIGHT]
 
-    print(df.tail())
+    prev = df[DELTA].shift(1)
+    print(prev.head())
+    print(prev.tail())
+    # crossover = prev == np.nan or (df[DELTA] >= 0 and prev <= 0) or (df[DELTA] <= 0 and prev >= 0)
+
+    print(df.tail(20))
 
 
 def plot(df):
@@ -48,11 +63,18 @@ def plot_all(df):
     plot(df['2016'])        # this year
     plot(df['2016-02'])     # this month
 
+    date_max = df.index.max()
+    plot(df[date_max - pd.DateOffset(weeks=1):])        # previous week
+    plot(df[date_max - pd.DateOffset(months=1):])       # previous month
+    plot(df[date_max - 3 * pd.DateOffset(months=1):])   # previous quarter
+    plot(df[date_max - pd.DateOffset(years=1):])        # previous year
+
 
 def main():
-    df = pd.read_csv(DATAFILE, index_col=0, parse_dates=True)
-    compute_stats(df)
-    # plot_all(df)
+    df = read()
+
+    # compute_stats(df)
+    plot_all(df)
 
 if __name__ == '__main__':
     main()
