@@ -55,6 +55,9 @@ def plot(df):
     ax = plt.gca()
     ax.plot(xx, fit_fn(xx))
 
+    plt.plot(xx, fit_fn(xx))
+    plt.show()
+
 
 def plot_all(df):
     plot(df)                # max
@@ -74,7 +77,8 @@ def main():
     df = read()
 
     # compute_stats(df)
-    plot_all(df)
+    # plot_all(df)
+    plot(df['2016-02'])     # this month
 
 if __name__ == '__main__':
     main()
