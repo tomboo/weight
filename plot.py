@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Spyder Editor
+Created on Wed Feb 10 22:10:18 2016
 
-This is a temporary script file.
+@author: Tom
 """
 
 import numpy as np
@@ -13,6 +13,7 @@ import matplotlib.dates as mdates
 DATAFILE = 'data.csv'
 WEIGHT = 'Weight'
 AVGWEIGHT = 'Avg. Weight'
+TREND = 'Trend'
 DELTA = 'Delta'
 
 
@@ -43,20 +44,14 @@ def compute_stats(df):
 
 
 def plot(df):
+    df = df.copy()
     dt = df.index.to_pydatetime()
     x = mdates.date2num(dt)
-    fit = np.polyfit(x, df[AVGWEIGHT], 1)
-    fit_fn = np.poly1d(fit)
-    # fit_fn is now a function which takes in x and returns as estimate for y
-
-    xx = [x[0], x[-1]]
+    z = np.polyfit(x, df[AVGWEIGHT], 1)
+    p = np.poly1d(z)
+    df[TREND] = p(x)
 
     df.plot(grid=True)
-    ax = plt.gca()
-    ax.plot(xx, fit_fn(xx))
-
-    plt.plot(xx, fit_fn(xx))
-    plt.show()
 
 
 def plot_all(df):
@@ -69,7 +64,7 @@ def plot_all(df):
     date_max = df.index.max()
     plot(df[date_max - pd.DateOffset(weeks=1):])        # previous week
     plot(df[date_max - pd.DateOffset(months=1):])       # previous month
-    plot(df[date_max - 3 * pd.DateOffset(months=1):])   # previous quarter
+    # plot(df[date_max - 3 * pd.DateOffset(months=1):])   # previous quarter
     plot(df[date_max - pd.DateOffset(years=1):])        # previous year
 
 
@@ -77,8 +72,8 @@ def main():
     df = read()
 
     # compute_stats(df)
-    # plot_all(df)
-    plot(df['2016-02'])     # this month
+    plot_all(df)
+    # plot(df['2016-02'])     # this month
 
 if __name__ == '__main__':
     main()

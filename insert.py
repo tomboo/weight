@@ -14,6 +14,7 @@ WEIGHT = 'Weight'
 
 
 def insert():
+    # Read file
     df = pd.read_csv(DATAFILE, index_col=0, parse_dates=True)
     print('\n', df.tail())
 
@@ -33,10 +34,11 @@ def insert():
     df.sort_index(inplace=True)
     print('\n', df.tail())
 
-    # Write to file
+    # Write file
     confirm = input('Write file [y/n]: ')
     if confirm == 'y':
         df.to_csv(DATAFILE)
+
 
 if __name__ == '__main__':
     insert()
