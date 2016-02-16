@@ -15,6 +15,7 @@ WEIGHT = 'Weight'
 AVGWEIGHT = 'Avg. Weight'
 TREND = 'Trend'
 DELTA = 'Delta'
+SPAN = 20
 
 
 def read():
@@ -24,7 +25,7 @@ def read():
     df.interpolate(inplace=True)    # linear interpolation
 
     # Exponentially weighted moving average (ewma)
-    df[AVGWEIGHT] = pd.ewma(df[WEIGHT], span=20)
+    df[AVGWEIGHT] = pd.ewma(df[WEIGHT], span=SPAN)
 
     return df
 
@@ -43,7 +44,7 @@ def compute_stats(df):
     print(df.tail(20))
 
 
-def plot(df):
+def plot(df, title=''):
     df = df.copy()
     dt = df.index.to_pydatetime()
     x = mdates.date2num(dt)
@@ -52,20 +53,29 @@ def plot(df):
     df[TREND] = p(x)
 
     df.plot(grid=True)
+    plt.title(title)
+    plt.xlabel('')
+    plt.show()
+
+    # Stats
+    print('Slope: {:.4f}'.format(z[0]))
+    print('Rate (per week): {:.2f}'.format(z[0] * 7))
+    print('Rate (per month): {:.2f}'.format(z[0] * 30))
+    print('Rate (per year): {:.2f}'.format(z[0] * 365))
 
 
 def plot_all(df):
-    plot(df)                # max
-    plot(df['2015'])        # last year
-    plot(df['2016-01'])     # last month
-    plot(df['2016'])        # this year
-    plot(df['2016-02'])     # this month
+    plot(df, title='Max')
+    plot(df['2015'], title='Last Year')
+    plot(df['2016-01'], title='Last Month')
+    plot(df['2016'], title='This Year')
+    plot(df['2016-02'], title='This Month')
 
     date_max = df.index.max()
-    plot(df[date_max - pd.DateOffset(weeks=1):])        # previous week
-    plot(df[date_max - pd.DateOffset(months=1):])       # previous month
-    # plot(df[date_max - 3 * pd.DateOffset(months=1):])   # previous quarter
-    plot(df[date_max - pd.DateOffset(years=1):])        # previous year
+    plot(df[date_max - pd.DateOffset(weeks=1):], title='Previous Week')
+    plot(df[date_max - pd.DateOffset(months=1):], title='Previous Month')
+    # plot(df[date_max - 3 * pd.DateOffset(months=1):], title='Previous Quarter')
+    plot(df[date_max - pd.DateOffset(years=1):], title='Previous Year')
 
 
 def main():
@@ -73,7 +83,7 @@ def main():
 
     # compute_stats(df)
     plot_all(df)
-    # plot(df['2016-02'])     # this month
+    # plot(df['2016-02'], title='This Month')     # this month
 
 if __name__ == '__main__':
     main()
