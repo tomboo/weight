@@ -82,8 +82,9 @@ def main():
     df = read()
 
     # compute_stats(df)
-    plot_all(df)
+    # plot_all(df)
     # plot(df['2016-02'], title='This Month')     # this month
+    plot(df[df.index.max() - pd.DateOffset(months=1):], title='Previous Month')
 
 if __name__ == '__main__':
     main()
