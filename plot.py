@@ -15,6 +15,9 @@ WEIGHT = 'Weight'
 AVGWEIGHT = 'Avg. Weight'
 TREND = 'Trend'
 DELTA = 'Delta'
+RUNS = 'Run Length'
+STREAK = 'Streak'
+
 SPAN = 20
 
 
@@ -30,6 +33,47 @@ def read():
     return df
 
 
+def runlengths(df):
+    '''
+    Returns a list of run lengths.
+    '''
+    
+    # print('\n', 'runlengths:')
+
+    list = []
+    row_count = len(df.index)
+    if (row_count == 0):
+        return list         # empty dataframe
+
+    res_previous = 0        # result (or outcome) for previous row
+    run_previous = 0        # run length for previous row
+    row_num = 0
+
+    for index, row in df.iterrows():
+        res_current = -1 if row[WEIGHT] < row[AVGWEIGHT] else 1
+
+        if row_num == 0:    # first row
+            run_current = 1
+        else:
+            if res_current == res_previous:
+                run_current += 1
+                list.append(run_previous * res_previous)
+            else:           # crossover
+                run_current = 1
+                list.append(run_previous * res_previous)
+
+        if row_num == row_count - 1:    # last row
+            list.append(run_current * res_current)
+
+        # print(row_num, res_current, run_current)
+
+        res_previous = res_current
+        run_previous = run_current
+        row_num += 1
+
+    return list
+
+
 def compute_stats(df):
     print(df.tail())
     print(df.describe())
@@ -41,27 +85,44 @@ def compute_stats(df):
     print(prev.tail())
     # crossover = prev == np.nan or (df[DELTA] >= 0 and prev <= 0) or (df[DELTA] <= 0 and prev >= 0)
 
-    print(df.tail(20))
+    print(df.tail(10))
 
 
 def plot(df, title=''):
     df = df.copy()
+
+    # Compute trend
     dt = df.index.to_pydatetime()
     x = mdates.date2num(dt)
     z = np.polyfit(x, df[AVGWEIGHT], 1)
     p = np.poly1d(z)
     df[TREND] = p(x)
 
+    # TODO: Plot selected columns
     df.plot(grid=True)
     plt.title(title)
     plt.xlabel('')
     plt.show()
 
+    # Today
+    df[DELTA] = df[WEIGHT] - df[AVGWEIGHT]
+    df[RUNS] = runlengths(df)
+
+    list = []
+    for index, row in df.iterrows():
+        wl = 'W' if row[RUNS] < 0 else 'L'
+        list.append(wl + str(int(np.abs(row[RUNS]))))
+    df[STREAK] = list
+
+    print(df.tail(10))
+
     # Stats
+    print()
     print('Slope: {:.4f}'.format(z[0]))
-    print('Rate (per week): {:.2f}'.format(z[0] * 7))
-    print('Rate (per month): {:.2f}'.format(z[0] * 30))
-    print('Rate (per year): {:.2f}'.format(z[0] * 365))
+    print('Weight Change Rate (per week): {:.2f}'.format(z[0] * 7))
+    print('Weight Change Rate (per month): {:.2f}'.format(z[0] * 30))
+    print('Weight Change Rate (per year): {:.2f}'.format(z[0] * 365))
+    print('\n', df.describe())
 
 
 def plot_all(df):
