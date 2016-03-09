@@ -87,6 +87,7 @@ class Model:
         z = np.polyfit(x, df[AVERAGE], 1)
         p = np.poly1d(z)
 
+        print('\n')
         print('slope: {:.4f}'.format(z[0]))
         print('rate:',
               '{:.2f} lbs/wk;'.format(z[0] * 7),
@@ -166,6 +167,7 @@ class Model:
         cols = [WEIGHT, AVERAGE, TREND]
         df[cols].plot(grid=True)
         plt.title(title)
+        plt.xlabel('')
         plt.show()
 
 
@@ -184,11 +186,13 @@ def main():
     # this_month = '2016-03'
     # this_year = '2016'
 
+    # Plot views
     model.plot(prev_week, 'Previous Week')
     model.plot(prev_month, 'Previous Month')
     model.plot(prev_quarter, 'Previous Quarter')
     model.plot(prev_year, 'Previous Year')
 
+    # Console view
     df = model.select(prev_year)
     df = model.calculate(df)
     print('\n', df.tail(10))
@@ -204,6 +208,8 @@ def main():
     print('Longest weight-gain streak: {}'.format(longestL))
     # TODO: Display start and end dates for longest streaks
     # TODO: Contributions in the last year (overall win-loss record)
+
+    # TODO: Work on heat map view
 
     # Plot delta
     # df.hist(column=DELTA)

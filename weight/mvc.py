@@ -80,3 +80,6 @@ class Controller():
 if __name__ == '__main__':
     c = Controller()
     c.run()
+
+# References:
+#   https://sukhbinder.wordpress.com/2014/12/25/an-example-of-model-view-controller-design-pattern-with-tkinter-python/

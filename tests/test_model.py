@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from weight import model
+import pandas as pd
 
 
 class TestModel:
@@ -27,9 +28,19 @@ class TestModel:
 
     # Test Cases
 
-    def test_model(self):
+    def test_construct(self):
         m = model.Model()
         assert(m is not None)
+
+    def test_select(self):
+        m = model.Model()
+
+        enddate = m.enddate()
+        prev_week = enddate - pd.DateOffset(weeks=1)
+
+        df = m.select(prev_week)
+        assert(df is not None)
+
 
 #
 # References:
@@ -48,3 +59,16 @@ class TestModel:
 #   py.test
 #   py.test -v          [verbose]
 #   py.test -s          [Turn off output capture]
+
+#
+# Pytest Fixtures:
+#   setup_module/teardown_module
+#       Called at the beginning and end of a module of test code
+#   setup_function/teardown_function
+#       Called before and after a test function call
+#   setup_class/teardown_class
+#       Called at the beginning and end of a class of test methods
+#   setup/teardown
+#       Alternate style of the class level fixtures
+#   setup_method/teardown_method
+#       Called before and after a test method call
