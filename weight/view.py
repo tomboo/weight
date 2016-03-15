@@ -17,23 +17,30 @@ def view(df):
     df[model.DELTA].plot(grid=True)
     plt.show()
 
+    df.ix[df[model.DELTA] > 0, model.DELTA] = 0
+    df[model.DELTA].plot(grid=True)
+    plt.show()
+
     # shift frame such that date start with Sunday
     startdate = df.index.min()
     print(startdate)
     print(startdate.weekday())
+    # weekday(): The day of the week with Monday=0, Sunday=6
 
-    a = -df[model.DELTA].values
-    a = a[-70:]
+    a = df[model.DELTA].values
+    a = a[-364:]
     a = a.reshape(7, -1, order='F')
-    plt.imshow(a, cmap=plt.cm.RdYlGn, interpolation='nearest')
-    plt.colorbar()
+
+    # http://matplotlib.org/examples/color/colormaps_reference.html
+    plt.imshow(a, cmap=plt.cm.afmhot, interpolation='nearest')
+    plt.colorbar(orientation='horizontal')
     plt.title(model.DELTA)
     plt.show()
 
 if __name__ == '__main__':
     connect = model.Model()
     enddate = connect.enddate()
-    prev_quarter = enddate - 3 * pd.DateOffset(months=1)
-    df = connect.select(prev_quarter)
+    startdate = enddate - pd.DateOffset(years=1)
+    df = connect.select(startdate)
     df = connect.calculate(df)
     view(df)

@@ -209,34 +209,5 @@ def main():
     # TODO: Display start and end dates for longest streaks
     # TODO: Contributions in the last year (overall win-loss record)
 
-    # TODO: Work on heat map view
-
-    # Plot delta
-    # df.hist(column=DELTA)
-    df[DELTA].plot(grid=True)
-    plt.show()
-
-    # shift frame such that date start with Sunday
-    a = -df[DELTA].values
-    a = a[-70:]
-    a = a.reshape(7, -1, order='F')
-    plt.imshow(a, cmap=plt.cm.RdYlGn, interpolation='nearest')
-    plt.colorbar()
-    plt.title(DELTA)
-    plt.show()
-
-    # Plot run length
-    # df.hist(column=RUN)
-    df[RUN].plot(grid=True)
-    plt.show()
-
-    a = df[RUN].values
-    a = a[-70:]
-    a = a.reshape(7, -1, order='F')
-    plt.imshow(a, interpolation='nearest')
-    plt.colorbar()
-    plt.title(RUN)
-    plt.show()
-
 if __name__ == '__main__':
     main()
