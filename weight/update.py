@@ -20,7 +20,7 @@ def update():
     to data file.
     '''
     # Read file
-    m = Model(raw=True)
+    m = Model(compute=False)
     print('\n', m.df.tail())
 
     # Enter date. Default is today.

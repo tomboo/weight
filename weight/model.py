@@ -18,18 +18,21 @@ SPAN = 20
 # Columns
 DATE = 'Date'
 WEIGHT = 'Weight'
+
+# Computed columns
 AVERAGE = 'Average'     # exponentially weighted moving average
-TREND = 'Trend'
 DELTA = 'Delta'
-RUN = 'Run'       # run length
-STREAK = 'Streak'
+RUN = 'Run'             # run length
+STREAK = 'Streak'       # win-loss streak
+TREND = 'Trend'
 
 
 class Model:
-    def __init__(self, raw=False):
+    def __init__(self, compute=True):
         self.df = self.read()
-        if not raw:
-            # Truncate table
+
+        # Truncate table and add computed columns
+        if compute:
             start = pd.datetime(2015, 1, 1)
             self.df = self.df[start:]
             self.df = self.compute(self.df)
