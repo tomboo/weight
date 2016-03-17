@@ -21,9 +21,10 @@ def view(df):
     df[model.DELTA].plot(grid=True)
     plt.show()
 
-    # shift frame such that date start with Sunday
-    startdate = df.index.min()
-    print(startdate)
+    # TODO: Shift frame such that date start with Sunday
+    startdate = df.index[0]
+    enddate = df.index[len(df.index) - 1]
+    print(startdate, enddate)
     print(startdate.weekday())
     # weekday(): The day of the week with Monday=0, Sunday=6
 
@@ -38,9 +39,8 @@ def view(df):
     plt.show()
 
 if __name__ == '__main__':
-    connect = model.Model()
-    enddate = connect.enddate()
+    m = model.Model()
+    enddate = m.enddate()
     startdate = enddate - pd.DateOffset(years=1)
-    df = connect.select(startdate)
-    df = connect.calculate(df)
+    df = m.select(startdate)
     view(df)
