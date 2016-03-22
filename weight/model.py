@@ -9,6 +9,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+from matplotlib import style
+style.use('ggplot')
 
 
 # TODO: need a better way to reference datafiles
