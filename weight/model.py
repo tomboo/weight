@@ -19,6 +19,7 @@ SPAN = 20
 # Columns
 DATE = 'Date'
 WEIGHT = 'Weight'
+FAT = 'Fat'
 
 # Computed columns
 AVERAGE = 'Average'     # exponentially weighted moving average
@@ -51,11 +52,12 @@ class Model:
         self.df.to_csv(DATAFILE)
         print('write (rows = {})'.format(len(self.df)))
 
-    def update(self, date, weight):
+    def update(self, date, weight, fat):
         '''
         Insert new row or update existing row.
         '''
         self.df.loc[date, WEIGHT] = weight
+        self.df.loc[date, FAT] = fat
         self.df.sort_index(inplace=True)
 
     def startdate(self):

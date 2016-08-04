@@ -12,6 +12,7 @@ import pandas as pd
 # TODO: Use column names from model
 DATE = 'Date'
 WEIGHT = 'Weight'
+FAT = 'Fat'
 
 
 def update():
@@ -34,8 +35,12 @@ def update():
     weight = input('Enter {0}: '.format(WEIGHT))
     w = float(weight)
 
+    # Enter fat.
+    fat = input('Enter {0}: '.format(FAT))
+    f = float(fat)
+
     # Update table
-    m.update(d, w)
+    m.update(d, w, f)
     print('\n', m.df.tail())
 
     # Write file
