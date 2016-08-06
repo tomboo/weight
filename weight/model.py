@@ -202,8 +202,21 @@ def plot(df, title=''):
 
 
 def plot_fat(df, title=''):
-    # cols = [WEIGHT, LEAN]
+    '''
+    Graph Body Fat (percent, average, trend)
+    '''
     cols = [FAT, FAT_AVG, FAT_TREND]
+    df[cols].plot(grid=True)
+    plt.title(title)
+    plt.xlabel('')
+    plt.show()
+
+
+def plot_lean(df, title=''):
+    '''
+    Graph Body Weight vs. Lean Weight
+    '''
+    cols = [WEIGHT, LEAN]
     df[cols].plot(grid=True)
     plt.title(title)
     plt.xlabel('')
@@ -233,6 +246,7 @@ def main():
     df = model.select(prev_month)
     plot(df, 'Previous Month')
     plot_fat(df, 'Previous Month')
+    plot_lean(df, 'Previous Month')
 
     df = model.select(prev_quarter)
     plot(df, 'Previous Quarter')
