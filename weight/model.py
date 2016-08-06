@@ -19,14 +19,18 @@ SPAN = 20
 # Columns
 DATE = 'Date'
 WEIGHT = 'Weight'
-FAT = 'Fat'
+FAT = 'Fat'             # body fat (percent)
 
 # Computed columns
 AVERAGE = 'Average'     # exponentially weighted moving average
-DELTA = 'Delta'
+DELTA = 'Delta'         # weight - average
 RUN = 'Run'             # run length
 STREAK = 'Streak'       # win-loss streak
-TREND = 'Trend'
+TREND = 'Trend'         # body weight average trend
+
+LEAN = 'Lean Weight'           # lean body weight
+FAT_AVG = 'Body Fat Average'
+FAT_TREND = 'Body Fat Trend'
 
 
 class Model:
@@ -84,16 +88,20 @@ class Model:
         x = mdates.date2num(dt)
         z = np.polyfit(x, df[AVERAGE], 1)
         p = np.poly1d(z)
+        df[TREND] = p(x)    # add trend column
 
         print('\n')
+        print('start:', df.index[0])
         print('slope: {:.4f}'.format(z[0]))
         print('rate:',
               '{:.2f} lbs/wk;'.format(z[0] * 7),
               '{:.2f} lbs/mo;'.format(z[0] * 30),
               '{:.2f} lbs/yr'.format(z[0] * 365))
 
-        # Add trend column
-        df[TREND] = p(x)
+        zf = np.polyfit(x, df[FAT_AVG], 1)
+        pf = np.poly1d(zf)
+        df[FAT_TREND] = pf(x)    # add trend column
+
         return df
 
     def average(self, df):
@@ -106,6 +114,7 @@ class Model:
 
         # Exponentially weighted moving average (ewma)
         df[AVERAGE] = pd.ewma(df[WEIGHT], span=SPAN)
+        df[FAT_AVG] = pd.ewma(df[FAT], span=SPAN)
         print('average (rows = {})'.format(len(df)))
         return df
 
@@ -165,11 +174,20 @@ class Model:
         df[STREAK] = list
         return df
 
+    def lean(self, df):
+        '''
+        Compute lean body weight
+        '''
+        df[LEAN] = df[WEIGHT] * (1.0 - df[FAT] / 100.0)
+        return df
+
     def compute(self, df):
         df = self.average(df)
         df = self.delta(df)
         df = self.runlength(df)
         df = self.streak(df)
+
+        df = self.lean(df)
         return df
 
     # end class Model
@@ -177,6 +195,15 @@ class Model:
 
 def plot(df, title=''):
     cols = [WEIGHT, AVERAGE, TREND]
+    df[cols].plot(grid=True)
+    plt.title(title)
+    plt.xlabel('')
+    plt.show()
+
+
+def plot_fat(df, title=''):
+    # cols = [WEIGHT, LEAN]
+    cols = [FAT, FAT_AVG, FAT_TREND]
     df[cols].plot(grid=True)
     plt.title(title)
     plt.xlabel('')
@@ -201,9 +228,11 @@ def main():
     # Plot views
     df = model.select(prev_week)
     plot(df, 'Previous Week')
+    plot_fat(df, 'Previous Week')
 
     df = model.select(prev_month)
     plot(df, 'Previous Month')
+    plot_fat(df, 'Previous Month')
 
     df = model.select(prev_quarter)
     plot(df, 'Previous Quarter')
