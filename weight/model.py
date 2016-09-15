@@ -238,21 +238,26 @@ def main():
     # this_month = '2016-03'
     # this_year = '2016'
 
-    # Plot views
+    # Plot views - Weight
     df = model.select(prev_week)
-    plot(df, 'Previous Week')
-    plot_fat(df, 'Previous Week')
+    plot(df, 'Weight (Previous Week)')
 
     df = model.select(prev_month)
-    plot(df, 'Previous Month')
-    plot_fat(df, 'Previous Month')
-    plot_lean(df, 'Previous Month')
+    plot(df, 'Weight (Previous Month)')
 
     df = model.select(prev_quarter)
-    plot(df, 'Previous Quarter')
+    plot(df, 'Weght (Previous Quarter)')
 
     df = model.select(prev_year)
-    plot(df, 'Previous Year')
+    plot(df, 'Weight (Previous Year)')
+
+    # Plot views - Fat
+    df = model.select(prev_week)
+    plot_fat(df, 'Fat (Previous Week)')
+
+    df = model.select(prev_month)
+    plot_fat(df, 'Fat (Previous Month)')
+    plot_lean(df, 'Lean vs. Fat (Previous Month)')
 
     # Console view
     df = model.select(prev_year)
