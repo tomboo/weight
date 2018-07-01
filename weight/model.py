@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+plt.style.use('ggplot')
 
 
 # TODO: need a better way to reference datafiles
@@ -18,37 +19,29 @@ SPAN = 20
 # Columns
 DATE = 'Date'
 WEIGHT = 'Weight'
+
+# Computed columns
 AVERAGE = 'Average'     # exponentially weighted moving average
-TREND = 'Trend'
 DELTA = 'Delta'
-RUN = 'Run'       # run length
-STREAK = 'Streak'
+RUN = 'Run'             # run length
+STREAK = 'Streak'       # win-loss streak
+TREND = 'Trend'
 
 
 class Model:
-    def __init__(self, raw=False):
+    def __init__(self, compute=True):
         self.df = self.read()
-        if not raw:
-            # TODO: Truncate table
-            self.df = self.average(self.df)
+
+        # Truncate table and add computed columns
+        if compute:
+            start = pd.datetime(2015, 1, 1)
+            self.df = self.df[start:]
+            self.df = self.compute(self.df)
 
     def read(self):
         df = pd.read_csv(DATAFILE, index_col=0, parse_dates=True)
         df.sort_index(inplace=True)
         print('read (rows = {})'.format(len(df)))
-        return df
-
-    def average(self, df):
-        '''
-        Compute exponentially weighted moving average.
-        Missing values are filled in using linear interpolation.
-        '''
-        df = df.asfreq('D')             # fill missing values
-        df.interpolate(inplace=True)    # linear interpolation
-
-        # Exponentially weighted moving average (ewma)
-        df[AVERAGE] = pd.ewma(df[WEIGHT], span=SPAN)
-        print('average (rows = {})'.format(len(df)))
         return df
 
     def write(self):
@@ -65,8 +58,11 @@ class Model:
         self.df.loc[date, WEIGHT] = weight
         self.df.sort_index(inplace=True)
 
+    def startdate(self):
+        return self.df.index[0]
+
     def enddate(self):
-        return self.df.index.max()
+        return self.df.index[len(self.df.index) - 1]
 
     def select(self, startdate):
         '''
@@ -96,6 +92,23 @@ class Model:
 
         # Add trend column
         df[TREND] = p(x)
+        return df
+
+    def average(self, df):
+        '''
+        Compute exponentially weighted moving average.
+        Missing values are filled in using linear interpolation.
+        '''
+        df = df.asfreq('D')             # fill missing values
+        df.interpolate(inplace=True)    # linear interpolation
+
+        # Exponentially weighted moving average (ewma)
+        # In Pandas > 0.17 ewma has been depricated.
+        # Same functionality can be obtained by combining ewm() and mean()
+        # df[AVERAGE] = pd.ewma(df[WEIGHT], span=SPAN)
+        df[AVERAGE] = df[WEIGHT].ewm(span=20, adjust=False).mean()
+        
+        print('average (rows = {})'.format(len(df)))
         return df
 
     def delta(self, df):
@@ -154,21 +167,22 @@ class Model:
         df[STREAK] = list
         return df
 
-    def calculate(self, df):
-        # df = self.average(df)
-        # df = self.trend(df)
+    def compute(self, df):
+        df = self.average(df)
         df = self.delta(df)
         df = self.runlength(df)
         df = self.streak(df)
         return df
 
-    def plot(self, startdate, title=''):
-        df = self.select(startdate)
-        cols = [WEIGHT, AVERAGE, TREND]
-        df[cols].plot(grid=True)
-        plt.title(title)
-        plt.xlabel('')
-        plt.show()
+    # end class Model
+
+
+def plot(df, title=''):
+    cols = [WEIGHT, AVERAGE, TREND]
+    df[cols].plot(grid=True)
+    plt.title(title)
+    plt.xlabel('')
+    plt.show()
 
 
 def main():
@@ -187,14 +201,20 @@ def main():
     # this_year = '2016'
 
     # Plot views
-    model.plot(prev_week, 'Previous Week')
-    model.plot(prev_month, 'Previous Month')
-    model.plot(prev_quarter, 'Previous Quarter')
-    model.plot(prev_year, 'Previous Year')
+    df = model.select(prev_week)
+    plot(df, 'Previous Week')
+
+    df = model.select(prev_month)
+    plot(df, 'Previous Month')
+
+    df = model.select(prev_quarter)
+    plot(df, 'Previous Quarter')
+
+    df = model.select(prev_year)
+    plot(df, 'Previous Year')
 
     # Console view
     df = model.select(prev_year)
-    df = model.calculate(df)
     print('\n', df.tail(10))
     print('\n', df.describe())
 
@@ -208,35 +228,6 @@ def main():
     print('Longest weight-gain streak: {}'.format(longestL))
     # TODO: Display start and end dates for longest streaks
     # TODO: Contributions in the last year (overall win-loss record)
-
-    # TODO: Work on heat map view
-
-    # Plot delta
-    # df.hist(column=DELTA)
-    df[DELTA].plot(grid=True)
-    plt.show()
-
-    # shift frame such that date start with Sunday
-    a = -df[DELTA].values
-    a = a[-70:]
-    a = a.reshape(7, -1, order='F')
-    plt.imshow(a, cmap=plt.cm.RdYlGn, interpolation='nearest')
-    plt.colorbar()
-    plt.title(DELTA)
-    plt.show()
-
-    # Plot run length
-    # df.hist(column=RUN)
-    df[RUN].plot(grid=True)
-    plt.show()
-
-    a = df[RUN].values
-    a = a[-70:]
-    a = a.reshape(7, -1, order='F')
-    plt.imshow(a, interpolation='nearest')
-    plt.colorbar()
-    plt.title(RUN)
-    plt.show()
 
 if __name__ == '__main__':
     main()
